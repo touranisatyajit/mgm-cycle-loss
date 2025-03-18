@@ -1,0 +1,97 @@
+MODEL_NAME: vgg16_nmgmv2_direct
+DATASET_NAME: voc
+
+DATASET_FULL_NAME: PascalVOC
+
+MODULE: models.model
+
+BACKBONE: VGG16_bn_final
+
+#OPTIMIZATION_METHOD: Direct
+MATCHING_PROBLEM: Unbalanced
+filter_type: NoFilter
+loss_epsilon: 0.00007
+pos_weight: 10
+train_noise_factor: True
+sigma_norm: 38.0
+sigma_decay: 0.02
+samples_per_num_train: 38
+lagrange_multiplier: 25
+#penalty_method_on_cycle: True
+penalty_epoch_increase: 75
+
+BATCH_SIZE: 7
+DATALOADER_NUM: 0
+
+RANDOM_SEED: 123
+
+STATISTIC_STEP: 10
+
+# available GPU ids
+GPUS:
+  - 0
+ # - 1
+
+# Problem configuration
+PROBLEM:
+  TYPE: MGM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  NUM_GRAPHS: 5
+
+
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: tri
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 20
+
+  LOSS_FUNC: perm
+
+  OPTIMIZER: Adam
+
+  # learning rate
+  LR: 2.e-3
+  SEPARATE_BACKBONE_LR: True
+  BACKBONE_LR: 2.e-5
+  MOMENTUM: 0.9
+  LR_DECAY: 0.5
+  LR_STEP:  # (in epochs)
+    - 2
+    - 6
+    - 10
+
+  EPOCH_ITERS: 300 # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 30  # epoch to be tested
+  SAMPLES: 1000  # number of tested pairs for each class
+
+# model parameters
+NGM:
+  EDGE_FEATURE: cat
+  FEATURE_CHANNEL: 512
+  #SK_ITER_NUM: 20
+  SK_ITER_NUM: 0
+  SK_EPSILON: 1.0e-10
+  SK_TAU: 0.05
+  GNN_FEAT:
+    - 16
+    - 16
+    - 16
+  GNN_LAYER: 3
+  GAUSSIAN_SIGMA: 1.
+  SK_EMB: 1
+  FIRST_ORDER: True
+  EDGE_EMB: False
