@@ -28,7 +28,7 @@ __C.pos_weight = 10
 __C.train_noise_factor = True
 __C.sigma_norm = 38.
 __C.sigma_decay = 0.02
-__C.samples_per_num_train = 38
+__C.num_perturbations = 38
 __C.donotdosvdonhypergraphbalanced = True
 __C.bbgmkeypointfiltering = False
 

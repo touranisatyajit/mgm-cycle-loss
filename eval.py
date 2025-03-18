@@ -112,16 +112,16 @@ def eval_model(model, alphas, dataloader, verbose=False):
                 if cfg.train_noise_factor:
                     sigma_tmp = to_var(torch.ones([outputs['ds_mat'].size()[0], 1], dtype=torch.float)) / cfg.sigma_norm
                     ds_mat_perturbed, _ = my_ops.my_phi_and_gamma_sigma_unbalanced(outputs['ds_mat'],
-                                                                                    cfg.samples_per_num_train,
+                                                                                    cfg.num_perturbations,
                                                                                     cfg.train_noise_factor,
                                                                                     sigma_tmp)
 
                     # Solve a matching problem for a batch of matrices, if noise is added.
                     # tiled variables, to compare to many permutations
-                    if cfg.samples_per_num_train > 1:
-                        gt_perm_mat_perturbed = outputs['gt_perm_mat'].repeat(cfg.samples_per_num_train, 1, 1)
-                        ns_0_perturbed = outputs['ns'][0].repeat(cfg.samples_per_num_train)
-                        ns_1_perturbed = outputs['ns'][1].repeat(cfg.samples_per_num_train)
+                    if cfg.num_perturbations > 1:
+                        gt_perm_mat_perturbed = outputs['gt_perm_mat'].repeat(cfg.num_perturbations, 1, 1)
+                        ns_0_perturbed = outputs['ns'][0].repeat(cfg.num_perturbations)
+                        ns_1_perturbed = outputs['ns'][1].repeat(cfg.num_perturbations)
 
                     else:
                         gt_perm_mat_perturbed = outputs['gt_perm_mat']
@@ -133,7 +133,7 @@ def eval_model(model, alphas, dataloader, verbose=False):
                     permutation_top_recurr = {}
                     for b in range(batch_num):
                         permutation_permuted = {}
-                        for s in range(cfg.samples_per_num_train):
+                        for s in range(cfg.num_perturbations):
                             if perm_mat_perturbed[b + s*batch_num] not in permutation_permuted:
                                 permutation_permuted[perm_mat_perturbed[b + s*batch_num]] = 1
                             else:
@@ -337,7 +337,7 @@ if __name__ == '__main__':
     wb = xlwt.Workbook()
     ws = wb.add_sheet('epoch{}'.format(cfg.EVAL.EPOCH))
 
-    log_path = Path(cfg.OUTPUT_PATH) / ('logs'+'_'+str(cfg.MATCHING_TYPE)+'_'+str(cfg.source_partial_kpt_len)+'_'+str(cfg.target_partial_kpt_len)+'_GConv_normalization_'+str(cfg.crossgraph_s_normalization)+str(cfg.OPTIMIZATION_METHOD)+'_sample_'+str(cfg.samples_per_num_train))
+    log_path = Path(cfg.OUTPUT_PATH) / ('logs'+'_'+str(cfg.MATCHING_TYPE)+'_'+str(cfg.source_partial_kpt_len)+'_'+str(cfg.target_partial_kpt_len)+'_GConv_normalization_'+str(cfg.crossgraph_s_normalization)+str(cfg.OPTIMIZATION_METHOD)+'_sample_'+str(cfg.num_perturbations))
 
     with DupStdoutFileManager(os.path.join(cfg.OUTPUT_PATH, 'eval_log_' + now_time + '.log')) as _:
         print_easydict(cfg)

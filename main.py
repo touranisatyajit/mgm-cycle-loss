@@ -40,7 +40,7 @@ def train_and_eval(model,
     print('model on device: {}'.format(device))
 
     alphas = torch.tensor(cfg.EVAL.PCK_ALPHAS, dtype=torch.float32, device=device)  # for evaluation
-    checkpoint_path = Path(cfg.OUTPUT_PATH) / ('params'+'_'+str(cfg.MATCHING_PROBLEM) + '_' + str(cfg.source_partial_kpt_len)+'_'+str(cfg.target_partial_kpt_len)+'_GConvNorma_'+str(cfg.crossgraph_s_normalization)+'_sample_'+str(cfg.samples_per_num_train)+now_time+'_'+str(cfg.PROBLEM.TYPE))
+    checkpoint_path = Path(cfg.OUTPUT_PATH) / ('params'+'_'+str(cfg.MATCHING_PROBLEM) + '_' + str(cfg.source_partial_kpt_len)+'_'+str(cfg.target_partial_kpt_len)+'_GConvNorma_'+str(cfg.crossgraph_s_normalization)+'_sample_'+str(cfg.num_perturbations)+now_time+'_'+str(cfg.PROBLEM.TYPE))
     if not checkpoint_path.exists():
         checkpoint_path.mkdir(parents=True)
 
@@ -134,16 +134,16 @@ def train_and_eval(model,
 
                         if cfg.train_noise_factor:
                             sigma_tmp = to_var(torch.ones([outputs['ds_mat'].size()[0], 1], dtype=torch.float)) / cfg.sigma_norm
-                            outputs['ds_mat'], _ = ops.my_phi_and_gamma_sigma_unbalanced(outputs['ds_mat'], cfg.samples_per_num_train,
+                            outputs['ds_mat'], _ = ops.my_phi_and_gamma_sigma_unbalanced(outputs['ds_mat'], cfg.num_perturbations,
                                                                                     cfg.train_noise_factor,
                                                                                     sigma_tmp)
 
                             # Solve a matching problem for a batch of matrices, if noise is added.
                             # tiled variables, to compare to many permutations
-                            if cfg.samples_per_num_train > 1:
-                                outputs['gt_perm_mat'] = outputs['gt_perm_mat'].repeat(cfg.samples_per_num_train, 1, 1)
-                                outputs['ns'][0] = outputs['ns'][0].repeat(cfg.samples_per_num_train)
-                                outputs['ns'][1] = outputs['ns'][1].repeat(cfg.samples_per_num_train)
+                            if cfg.num_perturbations > 1:
+                                outputs['gt_perm_mat'] = outputs['gt_perm_mat'].repeat(cfg.num_perturbations, 1, 1)
+                                outputs['ns'][0] = outputs['ns'][0].repeat(cfg.num_perturbations)
+                                outputs['ns'][1] = outputs['ns'][1].repeat(cfg.num_perturbations)
 
 
                             outputs['perm_mat'] = hungarian(outputs['ds_mat'], outputs['ns'][0], outputs['ns'][1])
@@ -181,13 +181,13 @@ def train_and_eval(model,
 
                             if cfg.train_noise_factor:
                                 sigma_tmp = to_var(torch.ones([s_pred.size()[0], 1],dtype=torch.float)) / cfg.sigma_norm
-                                # s_pred, _ = my_ops.my_phi_and_gamma_sigma_unbalanced(s_pred, cfg.samples_per_num_train, cfg.train_noise_factor, sigma_tmp)
-                                s_pred, _ = ops.perturb_scoreMatrix_unbalanced(s_pred, cfg.samples_per_num_train, cfg.train_noise_factor, sigma_tmp)
+                                # s_pred, _ = my_ops.my_phi_and_gamma_sigma_unbalanced(s_pred, cfg.num_perturbations, cfg.train_noise_factor, sigma_tmp)
+                                s_pred, _ = ops.perturb_scoreMatrix_unbalanced(s_pred, cfg.num_perturbations, cfg.train_noise_factor, sigma_tmp)
 
-                                if cfg.samples_per_num_train > 1:
-                                    x_gt = x_gt.repeat(cfg.samples_per_num_train, 1, 1)
-                                    ns_src = ns[idx_src].repeat(cfg.samples_per_num_train)
-                                    ns_trg = ns[idx_tgt].repeat(cfg.samples_per_num_train)
+                                if cfg.num_perturbations > 1:
+                                    x_gt = x_gt.repeat(cfg.num_perturbations, 1, 1)
+                                    ns_src = ns[idx_src].repeat(cfg.num_perturbations)
+                                    ns_trg = ns[idx_tgt].repeat(cfg.num_perturbations)
 
                                 else:
                                     ns_src = ns[idx_src][0]
@@ -208,7 +208,7 @@ def train_and_eval(model,
 
                             graph_cycleparts_indices, graph_cycleparts_preds = construct_permutation_chain((idx_src, idx_tgt), outputs['graph_indices'], outputs['perm_mat_list'])
                             for p in range(len(graph_cycleparts_preds)):
-                                graph_cycleparts_preds[p] = graph_cycleparts_preds[p].repeat(cfg.samples_per_num_train, 1, 1)
+                                graph_cycleparts_preds[p] = graph_cycleparts_preds[p].repeat(cfg.num_perturbations, 1, 1)
 
                             graph_cycleparts_preds_all.append(graph_cycleparts_preds[0])
                             cycle_consistency_loss = construct_cycle_loss(perm_mat, graph_cycleparts_preds, cfg.lagrange_multiplier)
@@ -369,7 +369,7 @@ if __name__ == '__main__':
 
     now_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
-    log_path = Path(cfg.OUTPUT_PATH) / ('logs'+'_'+str(cfg.MATCHING_PROBLEM)+'_'+str(cfg.source_partial_kpt_len)+'_'+str(cfg.target_partial_kpt_len)+'_GConv_normalization_'+str(cfg.crossgraph_s_normalization)+'_sample_'+str(cfg.samples_per_num_train)+'_'+str(cfg.PROBLEM.TYPE))
+    log_path = Path(cfg.OUTPUT_PATH) / ('logs'+'_'+str(cfg.MATCHING_PROBLEM)+'_'+str(cfg.source_partial_kpt_len)+'_'+str(cfg.target_partial_kpt_len)+'_GConv_normalization_'+str(cfg.crossgraph_s_normalization)+'_sample_'+str(cfg.num_perturbations)+'_'+str(cfg.PROBLEM.TYPE))
     if not log_path.exists():
         log_path.mkdir(parents=True)
 

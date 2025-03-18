@@ -43,7 +43,7 @@ def construct_cycle_loss(focal_perm_mat_pred, graph_cycleparts_preds, lagrange_m
 
     return all_cycles_loss
 
-def compute_gradient_update(perturbed_score_matrix, log_alpha_w_noise_permutation_matrix, train_wbce_loss, samples_per_num_train, n1_gt, n2_gt):
+def compute_gradient_update(perturbed_score_matrix, log_alpha_w_noise_permutation_matrix, train_wbce_loss, num_perturbations, n1_gt, n2_gt):
     with torch.no_grad():
         perturbed_score_matrix_w_bce = perturbed_score_matrix.clone()
 

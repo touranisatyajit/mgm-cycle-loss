@@ -15,7 +15,7 @@ pos_weight: 10
 train_noise_factor: True
 sigma_norm: 38.0
 sigma_decay: 0.02
-samples_per_num_train: 38
+num_perturbations: 38
 lagrange_multiplier: 25
 #penalty_method_on_cycle: True
 penalty_epoch_increase: 75
